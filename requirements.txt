@@ -1,0 +1,8 @@
+psycopg2-binary
+Werkzeug==2.3.7
+python-dotenv
+flask == 2.3.3
+Flask-Migrate == 4.0.5
+flask-restful == 0.3.10
+Flask-SQLAlchemy == 3.0.2
+Flask-Validator == 1.4.1
