@@ -10,6 +10,7 @@ baseDB = path.join(BASE_DIR, 'app.db')
 class BaseConfig(object):
     ENVIRONMENT = environ.get("ENVIRONMENT")
     SECRET_KEY = environ.get("SECRET_KEY")
+    JWT_SECRET_KEY = environ.get("JWT_SECRET_KEY")
     # Database
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI")
     SQLALCHEMY_ECHO = False
@@ -23,6 +24,7 @@ class ProductionConfig(BaseConfig):
     # Flask Config
     FLASK_DEBUG = environ.get("FLASK_DEBUG")
     SECRET_KEY = environ.get("SECRET_KEY")
+    JWT_SECRET_KEY = environ.get("JWT_SECRET_KEY")
     # Database
     SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI = environ.get('SQLALCHEMY_DATABASE_URI') or \
         'sqlite:///' + baseDB

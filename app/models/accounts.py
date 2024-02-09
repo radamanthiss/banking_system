@@ -28,11 +28,11 @@ class Account(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "account_number": self.name,
-            "account_type": self.email,
-            "balance": self.mobile_number,
+            "account_number": str(int(self.account_number)),
+            "account_type": self.account_type,
+            "balance": str(int(self.balance)),
             "user_id": self.user_id,
             "status": self.status,
-            "date_opened": self.date_opened,
-            "date_closed": self.date_closed,
+            "date_opened": self.date_opened.isoformat(),
+            "date_closed": self.date_closed.isoformat() if self.date_closed else None,
         }

@@ -6,3 +6,6 @@ Flask-Migrate == 4.0.5
 flask-restful == 0.3.10
 Flask-SQLAlchemy == 3.0.2
 Flask-Validator == 1.4.1
+Flask-JWT-Extended
+flask-cors
+pydantic
