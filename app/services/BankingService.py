@@ -17,14 +17,17 @@ class TransactionService:
     return False, "Deposit failed."
 
   def make_transfer(self,sender_account_id, recipient_account_id, amount, description="Transfer"):
-    if sender_account_id == recipient_account_id or amount <= 0:
-      return False, "Invalid transfer."
-    
     sender_account = Account.query.get(sender_account_id)
     recipient_account = Account.query.get(recipient_account_id)
     
-    if not sender_account or not recipient_account or sender_account.balance < amount:
-      return False, "Operation failed. Check accounts and balance."
+    if not sender_account or not recipient_account:
+      return False, "Invalid recipient account."
+    
+    if sender_account.balance < amount:
+      return False, "Insufficient balance in sender account."
+    
+    if sender_account_id == recipient_account_id or amount <= 0:
+      return False, "Invalid transfer."
     
     sender_account.balance -= amount
     recipient_account.balance += amount
@@ -51,3 +54,30 @@ class TransactionService:
     db.session.add(recipient_transaction)
     db.session.commit()
     return True, "Transfer successful."
+  
+  def make_withdrawal(self, account_id, amount, description="Withdrawal"):
+    account = Account.query.get(account_id)
+    # Check for a valid account and positive withdrawal amount
+    if not account or amount <= 0:
+      return False, "Invalid account or amount."
+    # Check for sufficient funds
+    if account.balance < amount:
+      return False, "Insufficient funds for withdrawal."
+    # If checks pass, proceed with the withdrawal
+    account.balance -= amount  # Decrease the account balance
+    transaction = Transaction(
+      transaction_type="withdrawal",
+      amount=amount,
+      description=description,
+      created_at=datetime.utcnow(),
+      account_id=account_id,
+      user_id=account.user_id
+    )
+    db.session.add(transaction)
+    db.session.commit()
+    return True, "Withdrawal successful."
+  
+  
+  def get_transactions_by_user(self, user_id):
+    return Transaction.query.filter_by(user_id=user_id).all()
+    

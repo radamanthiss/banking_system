@@ -29,15 +29,57 @@ class AccountDetail(Resource):
       return {
         "account": {
           "id": account.id,
-          "account_number": account.account_number,
+          "account_number": int(account.account_number),
           "account_type": account.account_type,
           "user_id": account.user_id,
-          "balance": account.balance,
+          "balance": float(account.balance),
           "status": account.status,
-          "date_opened": account.date_opened,
+          "date_opened": account.date_opened.strftime("%Y-%m-%d"),
+          "date_closed": account.date_closed if account.date_closed else "Not closed yet"
         }
       }, 200
-    return jsonify({"message": "User not found"}), 404
+    return {"message": "User not found"}, 404
+
+class AccountDetailByAccountNumber(Resource):
+  def __init__(self, **kwargs):
+    self.account_service = kwargs['account_service']
+    
+  def get(self, account_number=None):
+    account = self.account_service.get_account_by_account_number(account_number)
+    if account:
+      return {
+        "account": {
+          "id": account.id,
+          "account_number": int(account.account_number),
+          "account_type": account.account_type,
+          "user_id": account.user_id,
+          "balance": float(account.balance),
+          "status": account.status,
+          "date_opened": account.date_opened.strftime("%Y-%m-%d"),
+          "date_closed": account.date_closed if account.date_closed else "Not closed yet"
+        }
+      }, 200
+    return {"message": "Account not found"}, 404
+class AccountDetailByUser(Resource): 
+  def __init__(self, **kwargs):
+    self.account_service = kwargs['account_service']
+    
+  def get(self, user_id=None):
+    account = self.account_service.get_account_detail_by_user(user_id)
+    if account:
+      return {
+        "account": {
+          "id": account.id,
+          "account_number": int(account.account_number),
+          "account_type": account.account_type,
+          "user_id": account.user_id,
+          "balance": float(account.balance),
+          "status": account.status,
+          "date_opened": account.date_opened.strftime("%Y-%m-%d"),
+          "date_closed": account.date_closed if account.date_closed else "Not closed yet"
+        }
+      }, 200
+    return {"message": "User not found"}, 404
 
 class AccountList(Resource):
   def __init__(self, **kwargs):
@@ -60,6 +102,28 @@ class AccountList(Resource):
         for account in accounts
       ]
     }, 200
+    
+class AccountListByUser(Resource):
+  def __init__(self, **kwargs):
+    self.account_service = kwargs['account_service']
+    
+  def get(self, user_id):
+    accounts = self.account_service.get_accounts_by_user(user_id)
+    return {
+      "accounts": [
+        {
+          "id": account.id,
+          "account_number": int(account.account_number),
+          "account_type": account.account_type,
+          "user_id": account.user_id,
+          "balance": float(account.balance),
+          "status": account.status,
+          "date_opened": account.date_opened.strftime("%Y-%m-%d") if account.date_opened else "Not opened yet",
+          "date_closed": account.date_closed if account.date_closed else "Not closed yet"
+        }
+        for account in accounts
+      ]
+    }, 200
 
 class AccountUpdate(Resource):
   def __init__(self, **kwargs):
@@ -67,18 +131,23 @@ class AccountUpdate(Resource):
     
   def put(self, id):
     data = request.get_json()
-    account = self.account_service.update_account(id, data)
-    return jsonify({
+    account, response, status = self.account_service.update_account(id, data)
+    print('account_resource', account)
+    if not account:
+      return response, status
+    
+    return {
       "account": {
         "id": account.id,
-        "account_number": account.account_number,
+        "account_number": int(account.account_number),
         "account_type": account.account_type,
         "user_id": account.user_id,
-        "balance": account.balance,
+        "balance": float(account.balance),
         "status": account.status,
-        "date_opened": account.date_opened,
-      }
-    }), 200
+        "date_opened": account.date_opened.strftime("%Y-%m-%d") if account.date_opened else "Not opened yet",
+      },
+      "message": response['message']
+    }, status
 
 class AccountDelete(Resource):
   def __init__(self, **kwargs):
@@ -86,4 +155,4 @@ class AccountDelete(Resource):
   
   def delete(self, id):
     self.account_service.delete_account(id)
-    return jsonify({"message": "User deleted successfully"}), 200
+    return {"message": "User deleted successfully"}, 200

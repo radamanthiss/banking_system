@@ -105,6 +105,6 @@ class UserLogin(Resource):
           'message': 'User logged in successfully',
           'user':user_data,
           'access_token': access_token,
-      }, 200
+      },
     else:
       return {'message': error}, 401

@@ -3,17 +3,15 @@ from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from app.db.database import db
 from flask_restful import Api
-from app.resources.BankingResource import DepositCreate, TransferCreate
+from app.resources.BankingResource import DepositCreate, TransactionListByUser, TransferCreate, WithdrawCreate
 from app.resources.UserResource import UserCreate, UserDetail, UserList, UserLogin, UserUpdate, UserDelete
-from app.resources.AccountResource import AccountCreate, AccountDetail, AccountList, AccountUpdate, AccountDelete
+from app.resources.AccountResource import AccountCreate, AccountDetail, AccountDetailByAccountNumber, AccountDetailByUser, AccountList, AccountListByUser, AccountUpdate, AccountDelete
 from app.services.AccountService import AccountService
 from app.services.UserService import UserService
 from app.services.BankingService import TransactionService
 from flask_cors import CORS
 
-
 migrate = Migrate()
-
 
 def create_app(config=None):
     user_service = UserService()
@@ -43,15 +41,17 @@ def create_app(config=None):
     api.add_resource(AccountList, "/accounts", resource_class_kwargs={"account_service": account_service})
     api.add_resource(AccountUpdate, "/accounts/<int:id>", resource_class_kwargs={"account_service": account_service})
     api.add_resource(AccountDelete, "/accounts/<int:id>", resource_class_kwargs={"account_service": account_service})
-    
+    api.add_resource(AccountDetailByUser, "/accounts/user_id/<int:user_id>", resource_class_kwargs={"account_service": account_service})
+    api.add_resource(AccountListByUser, "/accounts/by_user_id/<int:user_id>", resource_class_kwargs={"account_service": account_service})
+    api.add_resource(AccountDetailByAccountNumber, "/accounts/account_number/<int:account_number>", resource_class_kwargs={"account_service": account_service})
     # Add resources for transactions
     api.add_resource(DepositCreate, "/transactions/deposit", resource_class_kwargs={"transaction_service": transaction_service})
     api.add_resource(TransferCreate, "/transactions/transfer", resource_class_kwargs={"transaction_service": transaction_service})
+    api.add_resource(WithdrawCreate, "/transactions/withdraw", resource_class_kwargs={"transaction_service": transaction_service})
+    api.add_resource(TransactionListByUser, "/transactions/user_id/<int:user_id>", resource_class_kwargs={"transaction_service": transaction_service})
     
     db.init_app(app)
     with app.app_context():
         db.create_all()  # Create database tables for our data models
         migrate.init_app(app, db)
-      
-
     return app

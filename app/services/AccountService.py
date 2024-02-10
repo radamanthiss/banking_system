@@ -17,26 +17,35 @@ class AccountService:
   def get_account_detail(self, id=None):
     return Account.query.get(id)
 
+  def get_account_detail_by_user(self, user_id=None):
+    return Account.query.filter_by(user_id=user_id).first()
+
   def get_accounts(self):
     return Account.query.all()
+  
+  def get_accounts_by_user(self, user_id=None):
+    return Account.query.filter_by(user_id=user_id).all()
+  
+  def get_account_by_account_number(self, account_number=None):
+    return Account.query.filter_by(account_number=account_number).first()
   
   def update_account(self, id=None, data=None):
     account = Account.query.get(id)
     if not account:
-        return jsonify({'message': 'Account not found'}), 404
-
-    account.name = data.get('name', account.name)
-    account.email = data.get('email', account.email)
-    account.mobile_number = data.get('mobile_number', account.mobile_number)
-    account.country = data.get('country', account.country)
+        return {'message': 'Account not found'}, 404
+    print('dataUpdateAccount', data)
+    account.account_type = data.get('account_type', account.account_type)
+    account.balance = data.get('balance', account.balance)
+    account.account_number = data.get('account_number', account.account_number)
+    account.status = data.get('status', account.status)
     db.session.commit()
 
-    return jsonify({'message': 'Account updated successfully'}), 200
+    return account, {'message': 'Account updated successfully'}, 200
     
   def delete_account(self, id=None):
     account = Account.query.get(id)
     if not account:
-      return jsonify({'message': 'Account not found'}), 404
+      return {'message': 'Account not found'}, 404
     db.session.delete(account)
     db.session.commit()
-    return jsonify({'message': 'Account deleted successfully'}), 200
+    return {'message': 'Account deleted successfully'}, 200
