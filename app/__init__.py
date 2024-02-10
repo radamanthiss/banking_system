@@ -25,8 +25,20 @@ def create_app(config=None):
         app.config.from_object(config)
     api = Api(app)
     jwt = JWTManager(app)
-    CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+    CORS(app, resources={r"/*": {"origins": ["http://localhost", "https://banking-app.onrender.com"]}})
     
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        return {"message": "Token has expired. Please log in again."}, 401
+
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error):  # Invalid token string
+        return {"message": "Invalid token. Please provide a valid token."}, 422
+
+    @jwt.unauthorized_loader
+    def missing_token_callback(error):  # No token provided
+        return {"message": "Authorization header is missing. Please provide a token."}, 401
+
     # Add resources for users
     api.add_resource(UserCreate, "/register", resource_class_kwargs={"user_service": user_service})
     api.add_resource(UserDetail, "/users/<int:id>", resource_class_kwargs={"user_service": user_service})

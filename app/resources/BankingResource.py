@@ -1,12 +1,13 @@
+from flask_jwt_extended import jwt_required
 from flask_restful import Resource, request
 
 class DepositCreate(Resource):
   def __init__(self, **kwargs):
     self.transaction_service = kwargs['transaction_service']
-  
+
+  @jwt_required()
   def post(self):
     data = request.get_json()
-    print('DATA', data)
     if not data or not data.get("account_id") or not data.get("amount"):
         return {"message": "Missing information"}, 400
     
@@ -23,7 +24,7 @@ class DepositCreate(Resource):
 class TransferCreate(Resource):
   def __init__(self, **kwargs):
     self.transaction_service = kwargs['transaction_service']
-  
+
   def post(self):
     data = request.get_json()
     if not data or not data.get("sender_account_id") or not data.get("recipient_account_id") or not data.get("amount"):
