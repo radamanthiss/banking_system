@@ -25,7 +25,7 @@ def create_app(config=None):
         app.config.from_object(config)
     api = Api(app)
     jwt = JWTManager(app)
-    CORS(app, resources={r"/*": {"origins": ["http://localhost", "https://banking-app.onrender.com"]}})
+    CORS(app, resources={r"/*": {"origins": ["http://localhost", "https://bank-app-g5en.onrender.com"]}})
     
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):
