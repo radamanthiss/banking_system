@@ -1,5 +1,4 @@
 import json
-from flask import jsonify
 from app.models.users import User
 from app.db.database import db
 from werkzeug.security import check_password_hash
@@ -26,7 +25,7 @@ class UserService:
   def update_user(self, id=None, data=None):
     user = User.query.get(id)
     if not user:
-        return jsonify({'message': 'User not found'}), 404
+      return {'message': 'User not found'}, 404
 
     user.name = data.get('name', user.name)
     user.email = data.get('email', user.email)
@@ -34,15 +33,15 @@ class UserService:
     user.country = data.get('country', user.country)
     db.session.commit()
 
-    return jsonify({'message': 'User updated successfully'}), 200
+    return user,{'message': 'User updated successfully'}, 200
     
   def delete_user(self, id=None):
     user = User.query.get(id)
     if not user:
-      return jsonify({'message': 'User not found'}), 404
+      return {'message': 'User not found'}, 404
     db.session.delete(user)
     db.session.commit()
-    return jsonify({'message': 'User deleted successfully'}), 200
+    return {'message': 'User deleted successfully'}, 200
   
   def verify_password(self, email, password):
     user = User.query.filter_by(email=email).first()

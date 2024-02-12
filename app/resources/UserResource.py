@@ -1,7 +1,6 @@
 import json
 from flask_jwt_extended import create_access_token
 from flask_restful import Resource, request, Api
-from flask import Flask, jsonify
 from app.models.users import User
 from app.services.UserService import UserService
 
@@ -13,9 +12,9 @@ class UserCreate(Resource):
   def post(self):
     data = request.get_json()
     if not data or not data.get("name") or not data.get("email") or not data.get("mobile_number") or not data.get("country") or not data.get("password") or not data.get("user_type"):
-      return jsonify({"message": "Missing information"}), 400
+      return {"message": "Missing information"}, 400
     if self.user_service.get_user_by_email(data.get("email")):
-      return jsonify({"message": "Email already exists"}), 400
+      return {"message": "Email already exists"}, 400
     
     name = data.get("name")
     email = data.get("email")
@@ -41,7 +40,7 @@ class UserDetail(Resource):
           "mobile_number": int(user.mobile_number),
         }
       }, 200
-    return jsonify({"message": "User not found"}), 404
+    return {"message": "User not found"}, 404
 
 class UserList(Resource):
   def __init__(self, **kwargs):
@@ -56,6 +55,8 @@ class UserList(Resource):
           "name": user.name,
           "email": user.email,
           "mobile_number": int(user.mobile_number),
+          "country": user.country,
+          "created_at": user.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         }
         for user in users
       ]
@@ -67,15 +68,21 @@ class UserUpdate(Resource):
     
   def put(self, id):
     data = request.get_json()
-    user = self.user_service.update_user(id, data)
-    return jsonify({
+    user, response, status = self.user_service.update_user(id, data)
+    if not user:
+      return response, status
+    
+    return {
       "user": {
-        "id": user.id,
+        "id": int(user.id),
         "name": user.name,
         "email": user.email,
         "mobile_number": int(user.mobile_number),
-      }
-    }), 200
+        "country": user.country,
+        "user_type": user.user_type,
+      },
+      "message": response['message']
+    }, status
 
 class UserDelete(Resource):
   def __init__(self, **kwargs):
@@ -84,7 +91,7 @@ class UserDelete(Resource):
   
   def delete(self, id):
     self.user_service.delete_user(id)
-    return jsonify({"message": "User deleted successfully"}), 200
+    return {"message": "User deleted successfully"}, 200
 
 class UserLogin(Resource):
   def __init__(self, **kwargs):

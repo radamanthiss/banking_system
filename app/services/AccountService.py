@@ -1,4 +1,3 @@
-from flask import jsonify
 from app.models.accounts import Account
 from app.db.database import db
 
@@ -7,7 +6,7 @@ class AccountService:
   def create_account(self, account_number: int, account_type: str,  balance : float, status: str, user_id: int):
     account = Account.query.filter_by(account_number=account_number).first()
     if account:
-      return jsonify({'message': 'Account number already exists'}), 400
+      return {'message': 'Account number already exists'}, 400
     else:
       new_account = Account(account_number=account_number, account_type=account_type, balance=balance, status=status,  user_id=user_id)
       db.session.add(new_account)

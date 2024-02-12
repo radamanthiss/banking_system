@@ -1,5 +1,4 @@
 from flask_restful import Resource, request, Api
-from flask import Flask, jsonify, make_response
 from app.models.accounts import Account
 from app.services.AccountService import AccountService
 
@@ -132,7 +131,6 @@ class AccountUpdate(Resource):
   def put(self, id):
     data = request.get_json()
     account, response, status = self.account_service.update_account(id, data)
-    print('account_resource', account)
     if not account:
       return response, status
     
