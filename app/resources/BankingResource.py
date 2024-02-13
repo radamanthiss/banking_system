@@ -5,7 +5,7 @@ class DepositCreate(Resource):
   def __init__(self, **kwargs):
     self.transaction_service = kwargs['transaction_service']
 
-  @jwt_required()
+  # @jwt_required()
   def post(self):
     data = request.get_json()
     if not data or not data.get("account_id") or not data.get("amount"):
