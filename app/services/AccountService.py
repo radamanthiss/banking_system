@@ -1,17 +1,31 @@
+from datetime import datetime
+import random
 from app.models.accounts import Account
 from app.db.database import db
+from app.models.transactions import Transaction
 
 
 class AccountService:
-  def create_account(self, account_number: int, account_type: str,  balance : float, status: str, user_id: int):
-    account = Account.query.filter_by(account_number=account_number).first()
-    if account:
-      return {'message': 'Account number already exists'}, 400
-    else:
-      new_account = Account(account_number=account_number, account_type=account_type, balance=balance, status=status,  user_id=user_id)
-      db.session.add(new_account)
-      db.session.commit()
-      return new_account
+  def create_account(self, account_type: str,  balance : float, status: str, user_id: int):
+    # call generate function
+    account_number = self.generate_account_number()
+    
+    new_account = Account(account_number=account_number, account_type=account_type, balance=balance, status=status,  user_id=user_id)
+    db.session.add(new_account)
+    db.session.commit()
+    return new_account
+  
+  def generate_account_number(self):
+    while True:
+      now = datetime.utcnow()
+      random_number = random.randint(1000, 9999)
+      account_number = int(now.strftime("%Y%m%d%")[:-3] + str(random_number))
+      # validated if account number is unique
+      if not Account.query.filter_by(account_number=account_number).first():
+        return account_number
+      else: 
+        return {'message': 'Account number already exists'}, 400
+
       
   def get_account_detail(self, id=None):
     return Account.query.get(id)
@@ -45,6 +59,13 @@ class AccountService:
     account = Account.query.get(id)
     if not account:
       return {'message': 'Account not found'}, 404
+    if account.balance > 0:
+      return {'message': 'Account has a balance greater than 0. Cannot delete account'}, 400
+    
+    transactions = Transaction.query.filter_by(account_id=id).first()
+    if transactions:
+      return {'message': 'Account has transactions. Cannot delete account'}, 400
+    
     db.session.delete(account)
     db.session.commit()
     return {'message': 'Account deleted successfully'}, 200

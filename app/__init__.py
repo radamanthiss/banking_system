@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from app.db.database import db
 from flask_restful import Api
 from app.resources.BankingResource import DepositCreate, TransactionListByUser, TransferCreate, WithdrawCreate
-from app.resources.UserResource import UserCreate, UserDetail, UserList, UserLogin, UserUpdate, UserDelete
+from app.resources.UserResource import UserCreate, UserDetail, UserDetailByDocument, UserList, UserLogin, UserUpdate, UserDelete
 from app.resources.AccountResource import AccountCreate, AccountDetail, AccountDetailByAccountNumber, AccountDetailByUser, AccountList, AccountListByUser, AccountUpdate, AccountDelete
 from app.services.AccountService import AccountService
 from app.services.UserService import UserService
@@ -46,9 +46,10 @@ def create_app(config=None):
     api.add_resource(UserUpdate, "/users/<int:id>", resource_class_kwargs={"user_service": user_service})
     api.add_resource(UserDelete, "/users/<int:id>", resource_class_kwargs={"user_service": user_service})
     api.add_resource(UserLogin, "/login", resource_class_kwargs={"user_service": user_service})
+    api.add_resource(UserDetailByDocument, "/users/document_number/<int:document_number>", resource_class_kwargs={"user_service": user_service})
     
     # Add resources for accounts
-    api.add_resource(AccountCreate, "/accounts", resource_class_kwargs={"account_service": account_service})
+    api.add_resource(AccountCreate, "/accounts", resource_class_kwargs={"account_service": account_service, "user_service": user_service})
     api.add_resource(AccountDetail, "/accounts/<int:id>", resource_class_kwargs={"account_service": account_service})
     api.add_resource(AccountList, "/accounts", resource_class_kwargs={"account_service": account_service})
     api.add_resource(AccountUpdate, "/accounts/<int:id>", resource_class_kwargs={"account_service": account_service})

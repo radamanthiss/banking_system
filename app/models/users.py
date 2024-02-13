@@ -16,6 +16,7 @@ class User(db.Model):
     user_type = db.Column(db.String(60), nullable=False, default="client")
     mobile_number = db.Column(db.Numeric(10), unique=True, nullable=False)
     country = db.Column(db.String(60), nullable=False)
+    document_number = db.Column(db.Numeric(10), unique=True, nullable=False)
     created_at = db.Column(db.TIMESTAMP, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.TIMESTAMP, default=datetime.utcnow, nullable=False)
     
@@ -34,10 +35,14 @@ class User(db.Model):
         ValidateNumber(
             User.mobile_number, True, True, "The mobile number type must be number"
         )
+        ValidateNumber(
+            User.document_number, True, True, "The document number type must be number"
+        )
 
     def to_dict(self):
         return {
             "id": self.id,
+            "document_number": str(int(self.document_number)),
             "name": self.name,
             "email": self.email,
             "mobile_number": str(int(self.mobile_number)),

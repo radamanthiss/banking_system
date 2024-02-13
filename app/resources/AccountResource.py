@@ -6,17 +6,19 @@ from app.services.AccountService import AccountService
 class AccountCreate(Resource):
   def __init__(self, **kwargs):
     self.account_service = kwargs['account_service']
+    self.user_service = kwargs['user_service']
   
   def post(self):
     data = request.get_json()
-    account_number = int(data.get("account_number"))
     account_type = data.get("account_type")
     balance = data.get("balance")
     status = data.get("status")
-    user_id = data.get("user_id")
-    account = self.account_service.create_account(account_number, account_type, balance, status, user_id)
+    document_number = data.get("document_number")
+    user = self.user_service.get_user_by_document_number(document_number)
+    user_id = user.id
+    account = self.account_service.create_account(account_type, balance, status, user_id)
     
-    return {'account_number': int(account.account_number)}, 201
+    return {'account_number': int(account.account_number), "message": "Account created successfully"}, 201
 
 class AccountDetail(Resource): 
   def __init__(self, **kwargs):
@@ -152,5 +154,5 @@ class AccountDelete(Resource):
     self.account_service = kwargs['account_service']
   
   def delete(self, id):
-    self.account_service.delete_account(id)
-    return {"message": "User deleted successfully"}, 200
+    response = self.account_service.delete_account(id)
+    return response

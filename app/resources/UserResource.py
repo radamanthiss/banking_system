@@ -11,7 +11,7 @@ class UserCreate(Resource):
   
   def post(self):
     data = request.get_json()
-    if not data or not data.get("name") or not data.get("email") or not data.get("mobile_number") or not data.get("country") or not data.get("password") or not data.get("user_type"):
+    if not data or not data.get("name") or not data.get("email") or not data.get("mobile_number") or not data.get("country") or not data.get("password") or not data.get("user_type") or not data.get("document_number"):
       return {"message": "Missing information"}, 400
     if self.user_service.get_user_by_email(data.get("email")):
       return {"message": "Email already exists"}, 400
@@ -22,7 +22,8 @@ class UserCreate(Resource):
     country = data.get("country")
     user_type = data.get("user_type")
     password = data.get("password")
-    user = self.user_service.create_user(name, email, password, mobile_number, country, user_type)
+    document_number = data.get("document_number")
+    user = self.user_service.create_user(name, email, password, mobile_number, country, user_type, document_number)
     return {'id':user.id, "message":"User successfully registered"}, 201
 
 class UserDetail(Resource): 
@@ -38,6 +39,10 @@ class UserDetail(Resource):
           "name": user.name,
           "email": user.email,
           "mobile_number": int(user.mobile_number),
+          "country": user.country,
+          "document_number": int(user.document_number),
+          "user_type": user.user_type,
+          "created_at": user.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         }
       }, 200
     return {"message": "User not found"}, 404
@@ -56,6 +61,8 @@ class UserList(Resource):
           "email": user.email,
           "mobile_number": int(user.mobile_number),
           "country": user.country,
+          "document_number": int(user.document_number),
+          "user_type": user.user_type,
           "created_at": user.created_at.strftime("%Y-%m-%d %H:%M:%S"),
         }
         for user in users
@@ -87,11 +94,11 @@ class UserUpdate(Resource):
 class UserDelete(Resource):
   def __init__(self, **kwargs):
     self.user_service = kwargs['user_service']
-    user = self.user_service.delete_user(id)
+    # user = self.user_service.delete_user(id)
   
   def delete(self, id):
-    self.user_service.delete_user(id)
-    return {"message": "User deleted successfully"}, 200
+    response = self.user_service.delete_user(id)
+    return response
 
 class UserLogin(Resource):
   def __init__(self, **kwargs):
@@ -103,9 +110,7 @@ class UserLogin(Resource):
     password = data.get('password')
     user, error = self.user_service.verify_password(email, password)
     
-    if user:  
-      # Assuming you have a method to generate auth tokens or similar
-      # token = generate_auth_token(user.id)
+    if user:
       access_token = create_access_token(identity=user.id)
       user_data = user.to_dict() if hasattr(user, 'to_dict') else {}
       return {
@@ -115,3 +120,24 @@ class UserLogin(Resource):
       },
     else:
       return {'message': error}, 401
+    
+class UserDetailByDocument(Resource):
+  def __init__(self, **kwargs):
+    self.user_service = kwargs['user_service']
+  
+  def get(self, document_number):
+    user = self.user_service.get_user_by_document_number(document_number)
+    if user:
+      return {
+        "user": {
+          "id": user.id,
+          "name": user.name,
+          "email": user.email,
+          "mobile_number": int(user.mobile_number),
+          "country": user.country,
+          "document_number": int(user.document_number),
+          "user_type": user.user_type,
+          "created_at": user.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+      }, 200
+    return {"message": "User not found"}, 404
